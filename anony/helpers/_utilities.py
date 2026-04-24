@@ -34,8 +34,30 @@ class Utilities:
             return f"{bytes / 1024:.2f} KB"
 
     def to_seconds(self, time: str) -> int:
+        if not time:
+            return 0
+        if "PT" in time:
+            seconds = 0
+            if "H" in time:
+                seconds += int(re.search(r"(\d+)H", time).group(1)) * 3600
+            if "M" in time:
+                seconds += int(re.search(r"(\d+)M", time).group(1)) * 60
+            if "S" in time:
+                seconds += int(re.search(r"(\d+)S", time).group(1))
+            return seconds
         parts = [int(p) for p in time.strip().split(":")]
         return sum(value * 60**i for i, value in enumerate(reversed(parts)))
+
+    def get_readable_time(self, seconds: int) -> str:
+        if seconds < 60:
+            return f"00:{seconds:02d}"
+        elif seconds < 3600:
+            return f"{seconds // 60:02d}:{seconds % 60:02d}"
+        else:
+            h = seconds // 3600
+            m = (seconds % 3600) // 60
+            s = seconds % 60
+            return f"{h:02d}:{m:02d}:{s:02d}"
 
 
     def get_url(self, message_1: types.Message) -> str | None:
@@ -92,7 +114,7 @@ class Utilities:
         title: str,
         duration: str,
     ) -> None:
-        if m.chat.id == app.logger:
+        if app.logger == 0:
             return
         _text = m.lang["play_log"].format(
             app.name,
@@ -104,26 +126,34 @@ class Utilities:
             title,
             duration,
         )
-        await app.send_message(chat_id=app.logger, text=_text)
+        try:
+            await app.send_message(chat_id=app.logger, text=_text)
+        except Exception:
+            pass
 
     async def send_log(self, m: types.Message, chat: bool = False) -> None:
-        if chat:
-            user = m.from_user
-            return await app.send_message(
+        if app.logger == 0:
+            return
+        try:
+            if chat:
+                user = m.from_user
+                return await app.send_message(
+                    chat_id=app.logger,
+                    text=m.lang["log_chat"].format(
+                        m.chat.id,
+                        m.chat.title,
+                        user.id if user else 0,
+                        user.mention if user else "Anonymous",
+                    ),
+                )
+
+            await app.send_message(
                 chat_id=app.logger,
-                text=m.lang["log_chat"].format(
-                    m.chat.id,
-                    m.chat.title,
-                    user.id if user else 0,
-                    user.mention if user else "Anonymous",
+                text=m.lang["log_user"].format(
+                    m.from_user.id,
+                    f"@{m.from_user.username}",
+                    m.from_user.mention,
                 ),
             )
-
-        await app.send_message(
-            chat_id=app.logger,
-            text=m.lang["log_user"].format(
-                m.from_user.id,
-                f"@{m.from_user.username}",
-                m.from_user.mention,
-            ),
-        )
+        except Exception:
+            pass

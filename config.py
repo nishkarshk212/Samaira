@@ -24,6 +24,13 @@ class Config:
 
         self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/fallenx")
         self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/DevilsHeavenMF")
+        self.SOURCE_CODE = getenv("SOURCE_CODE", "https://github.com/AnonymousX1025/AnonXMusic")
+
+        self.API_TOKEN = getenv("API_TOKEN")
+        self.API_BASE_URL = getenv("API_BASE_URL")
+        self.PREFIX = getenv("PREFIX", "/")
+        self.YOUTUBE_API_KEY = getenv("YOUTUBE_API_KEY")
+        self.YOUTUBE_API_KEY_2 = getenv("YOUTUBE_API_KEY_2")
 
         self.AUTO_LEAVE: bool = getenv("AUTO_LEAVE", "False").lower() == "true"
         self.AUTO_END: bool = getenv("AUTO_END", "False").lower() == "true"
@@ -33,18 +40,15 @@ class Config:
 
         self.LANG_CODE = getenv("LANG_CODE", "en")
 
-        self.COOKIES_URL = [
-            url for url in getenv("COOKIES_URL", "").split(" ")
-            if url and "batbin.me" in url
-        ]
         self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://te.legra.ph/file/3e40a408286d4eda24191.jpg")
         self.PING_IMG = getenv("PING_IMG", "https://files.catbox.moe/haagg2.png")
         self.START_IMG = getenv("START_IMG", "https://files.catbox.moe/zvziwk.jpg")
+        self.START_IMAGES = getenv("START_IMAGES", self.START_IMG).split()
 
     def check(self):
         missing = [
             var
-            for var in ["API_ID", "API_HASH", "BOT_TOKEN", "MONGO_URL", "LOGGER_ID", "OWNER_ID", "SESSION1"]
+            for var in ["API_ID", "API_HASH", "BOT_TOKEN", "MONGO_URL", "SESSION1"]
             if not getattr(self, var)
         ]
         if missing:

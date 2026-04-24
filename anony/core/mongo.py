@@ -16,7 +16,11 @@ class MongoDB:
         """
         Initialize the MongoDB connection.
         """
-        self.mongo = AsyncMongoClient(config.MONGO_URL, serverSelectionTimeoutMS=12500)
+        self.mongo = AsyncMongoClient(
+            config.MONGO_URL,
+            serverSelectionTimeoutMS=30000,
+            tlsAllowInvalidCertificates=True
+        )
         self.db = self.mongo.Anon
 
         self.admin_list = {}

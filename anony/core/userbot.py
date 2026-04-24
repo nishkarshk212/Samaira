@@ -29,6 +29,7 @@ class Userbot(Client):
                     api_id=config.API_ID,
                     api_hash=config.API_HASH,
                     session_string=session,
+                    in_memory=True,
                 ),
             )
 
@@ -48,10 +49,11 @@ class Userbot(Client):
         }
         client = clients[num]
         await client.start()
-        try:
-            await client.send_message(config.LOGGER_ID, "Assistant Started")
-        except Exception:
-            raise SystemExit(f"Assistant {num} failed to send message in log group.")
+        if config.LOGGER_ID != 0:
+            try:
+                await client.send_message(config.LOGGER_ID, "Assistant Started")
+            except Exception:
+                logger.warning(f"Assistant {num} failed to send message in log group.")
 
         client.id = ub.me.id
         client.name = ub.me.first_name

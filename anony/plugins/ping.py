@@ -11,7 +11,7 @@ from anony import app, anon, boot, config, lang
 from anony.helpers import buttons
 
 
-@app.on_message(filters.command(["alive", "ping"]) & ~app.bl_users)
+@app.on_message(filters.command(["alive", "ping"], config.PREFIX) & ~app.bl_users)
 @lang.language()
 async def _ping(_, m: types.Message):
     start = time.time()

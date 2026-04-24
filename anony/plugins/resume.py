@@ -5,11 +5,11 @@
 
 from pyrogram import filters, types
 
-from anony import anon, app, db, lang
+from anony import anon, app, config, db, lang
 from anony.helpers import buttons, can_manage_vc
 
 
-@app.on_message(filters.command(["resume"]) & filters.group & ~app.bl_users)
+@app.on_message(filters.command(["resume"], config.PREFIX) & filters.group & ~app.bl_users)
 @lang.language()
 @can_manage_vc
 async def _resume(_, m: types.Message):

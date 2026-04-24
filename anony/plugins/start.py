@@ -3,13 +3,14 @@
 # This file is part of AnonXMusic
 
 import asyncio
+import random
 from pyrogram import enums, filters, types
 
 from anony import app, config, db, lang
 from anony.helpers import buttons, utils
 
 
-@app.on_message(filters.command(["help"]) & filters.private & ~app.bl_users)
+@app.on_message(filters.command(["help"], config.PREFIX) & filters.private & ~app.bl_users)
 @lang.language()
 async def _help(_, m: types.Message):
     await m.reply_text(
@@ -19,7 +20,7 @@ async def _help(_, m: types.Message):
     )
 
 
-@app.on_message(filters.command(["start"]))
+@app.on_message(filters.command(["start"], config.PREFIX))
 @lang.language()
 async def start(_, message: types.Message):
     if message.from_user.id in app.bl_users and message.from_user.id not in db.notified:
@@ -37,7 +38,7 @@ async def start(_, message: types.Message):
 
     key = buttons.start_key(message.lang, private)
     await message.reply_photo(
-        photo=config.START_IMG,
+        photo=random.choice(config.START_IMAGES),
         caption=_text,
         reply_markup=key,
         quote=not private,
@@ -55,7 +56,7 @@ async def start(_, message: types.Message):
         await db.add_chat(message.chat.id)
 
 
-@app.on_message(filters.command(["playmode", "settings"]) & filters.group & ~app.bl_users)
+@app.on_message(filters.command(["playmode", "settings"], config.PREFIX) & filters.group & ~app.bl_users)
 @lang.language()
 async def settings(_, message: types.Message):
     admin_only = await db.get_play_mode(message.chat.id)
