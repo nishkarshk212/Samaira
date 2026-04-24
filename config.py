@@ -42,8 +42,8 @@ class Config:
 
         self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://te.legra.ph/file/3e40a408286d4eda24191.jpg")
         self.PING_IMG = getenv("PING_IMG", "https://files.catbox.moe/haagg2.png")
-        self.START_IMG = getenv("START_IMG", "https://files.catbox.moe/zvziwk.jpg")
-        self.START_IMAGES = getenv("START_IMAGES", self.START_IMG).split()
+        self.START_IMG = getenv("START_IMG", "https://i.ibb.co/2YRwGzkD/745021b5d275946e55fd3379d27938c5.jpg")
+        self.START_IMAGES = getenv("START_IMAGES", "https://i.ibb.co/2YRwGzkD/745021b5d275946e55fd3379d27938c5.jpg https://i.ibb.co/VWTFQgqp/52626f71391e476ab27e76422c2b5929.jpg https://i.ibb.co/SYDmcWn/72847d92305072547709795e74c9fd21.jpg https://i.ibb.co/fGHfDfZB/144c03ddcddd01b9964e970588c1dfee.jpg https://i.ibb.co/60ZBFxQW/5e672fcc0d8d27eb4078307d1b819b5f.jpg https://i.ibb.co/Q3zKPjH2/5b9bfbabefc7a8adc8d03a59719f5063.jpg https://i.ibb.co/pvDyRV2N/7fa21b8d96715d6abaaa895273d623a3.jpg https://i.ibb.co/MDP1kPS6/33382291149636149381a9cacbc49e55.jpg https://i.ibb.co/mC7QSB5J/c8b77a631bd9c59530a604b579c452d4.jpg https://i.ibb.co/gb5Qt0sH/e0b993de01398d54a130f7481e761907.jpg").split()
 
     def check(self):
         missing = [
