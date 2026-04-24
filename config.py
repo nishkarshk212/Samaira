@@ -22,8 +22,8 @@ class Config:
         self.SESSION2 = getenv("SESSION2", None)
         self.SESSION3 = getenv("SESSION3", None)
 
-        self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/fallenx")
-        self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/DevilsHeavenMF")
+        self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/Tele_212_bots")
+        self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/bot_support_23")
         self.SOURCE_CODE = getenv("SOURCE_CODE", "https://github.com/AnonymousX1025/AnonXMusic")
 
         self.API_TOKEN = getenv("API_TOKEN")
