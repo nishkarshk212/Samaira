@@ -182,6 +182,26 @@ class TgCall(PyTgCalls):
         return round(sum(pings) / len(pings), 2)
 
 
+    async def _handle_vc_join(self, chat_id: int, participant) -> None:
+        """Handle notification when a user joins the voice chat."""
+        try:
+            # Get user information from Pyrogram
+            user = await app.get_users(participant.user_id)
+            if user and not user.is_bot:
+                # Create mention text with user name and ID
+                mention = user.mention
+                user_id = participant.user_id
+                
+                # Send notification message to the group
+                await app.send_message(
+                    chat_id=chat_id,
+                    text=f"🎤 <b>{mention}</b> <code>[{user_id}]</code> joined the voice chat!",
+                    disable_web_page_preview=True,
+                )
+        except Exception as e:
+            logger.error(f"Error sending VC join notification: {e}")
+
+
     async def decorators(self, client: PyTgCalls) -> None:
         @client.on_update()
         async def update_handler(_, update: types.Update) -> None:
@@ -195,6 +215,10 @@ class TgCall(PyTgCalls):
                     types.ChatUpdate.Status.CLOSED_VOICE_CHAT,
                 ]:
                     await self.stop(update.chat_id)
+            elif isinstance(update, types.UpdatedGroupCallParticipant):
+                if update.action == types.GroupCallParticipant.Action.JOINED:
+                    # Send notification when a user joins the voice chat
+                    await self._handle_vc_join(update.chat_id, update.participant)
 
 
     async def boot(self) -> None:
