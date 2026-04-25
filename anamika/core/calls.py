@@ -19,6 +19,7 @@ from anamika.helpers import Media, Track, buttons
 class TgCall(PyTgCalls):
     def __init__(self):
         self.clients = []
+        self._vc_join_cache = {}  # Track recent VC join notifications to prevent duplicates
 
     async def pause(self, chat_id: int) -> bool:
         client = await db.get_assistant(chat_id)
@@ -185,29 +186,42 @@ class TgCall(PyTgCalls):
     async def _handle_vc_join(self, chat_id: int, participant) -> None:
         """Handle notification when a user joins the voice chat."""
         try:
+            import time
+            
             # Skip notification for bots
             if participant.user_id == (await app.get_me()).id:
                 return
             
+            # Create a unique key for this join event
+            cache_key = f"{chat_id}_{participant.user_id}"
+            current_time = time.time()
+            
+            # Check if we already sent a notification for this user in the last 10 seconds
+            if cache_key in self._vc_join_cache:
+                last_notification = self._vc_join_cache[cache_key]
+                if current_time - last_notification < 10:  # 10 second cooldown
+                    return  # Skip duplicate notification
+            
+            # Update the cache
+            self._vc_join_cache[cache_key] = current_time
+            
+            # Clean old cache entries (older than 60 seconds)
+            expired_keys = [
+                key for key, timestamp in self._vc_join_cache.items()
+                if current_time - timestamp > 60
+            ]
+            for key in expired_keys:
+                del self._vc_join_cache[key]
+            
             # Create notification text with user ID
             user_id = participant.user_id
             
-            # Try to get user mention, fallback to just ID if it fails
-            try:
-                user = await app.get_chat(chat_id)
-                # Send notification message to the group
-                await app.send_message(
-                    chat_id=chat_id,
-                    text=f"🎤 A user joined the voice chat!\n👤 User ID: <code>{user_id}</code>",
-                    disable_web_page_preview=True,
-                )
-            except Exception:
-                # Fallback if get_users fails
-                await app.send_message(
-                    chat_id=chat_id,
-                    text=f"🎤 A user joined the voice chat!\n👤 User ID: <code>{user_id}</code>",
-                    disable_web_page_preview=True,
-                )
+            # Send notification message to the group
+            await app.send_message(
+                chat_id=chat_id,
+                text=f"🎤 A user joined the voice chat!\n👤 User ID: <code>{user_id}</code>",
+                disable_web_page_preview=True,
+            )
         except Exception as e:
             logger.error(f"Error sending VC join notification: {e}")
 
