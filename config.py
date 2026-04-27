@@ -26,6 +26,7 @@ class Config:
         self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/bot_support_23")
         self.SOURCE_CODE = getenv("SOURCE_CODE", "https://github.com/AnonymousX1025/AnonXMusic")
 
+        self.NEXTGEN_API_KEY = getenv("NEXTGEN_API_KEY")  # Priority: NextGenBot API Key
         self.API_TOKEN = getenv("API_TOKEN")
         self.API_BASE_URL = getenv("API_BASE_URL")
         self.PREFIX = getenv("PREFIX", "/")
