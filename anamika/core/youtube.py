@@ -230,6 +230,14 @@ class YouTube:
         return tracks
 
     async def download(self, video_id: str, video: bool = False) -> str | None:
+        # Try xbit API first if configured
+        if config.XBIT_API_KEY:
+            try:
+                return await self.xbit_download(video_id, video)
+            except Exception as ex:
+                logger.warning(f"xbit API download failed: {ex}, falling back to yt-dlp")
+        
+        # Fallback to yt-dlp
         url = self.base + video_id
         ext = "mp4" if video else "webm"
         filename = f"downloads/{video_id}.{ext}"
@@ -274,3 +282,53 @@ class YouTube:
             return filename
 
         return await asyncio.to_thread(_download)
+
+    async def xbit_download(self, video_id: str, video: bool = False) -> str | None:
+        """Download using xbit API which returns audio_url and video_url"""
+        ext = "mp4" if video else "webm"
+        filename = f"downloads/{video_id}.{ext}"
+
+        if Path(filename).exists():
+            return filename
+
+        # Determine which URL to use based on video flag
+        api_endpoint = f"{config.XBIT_BASE_URL}/youtube"
+        params = {
+            "video_id": video_id,
+            "token": config.XBIT_API_KEY
+        }
+
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_endpoint, params=params, ssl=ssl_context) as resp:
+                if resp.status != 200:
+                    raise Exception(f"xbit API returned status {resp.status}")
+                
+                data = await resp.json()
+                
+                if data.get("status") != "success":
+                    raise Exception(f"xbit API error: {data}")
+                
+                # Get the appropriate URL
+                stream_url = data.get("video_url") if video else data.get("audio_url")
+                if not stream_url:
+                    raise Exception("No stream URL returned from xbit API")
+                
+                # Download the file
+                async with session.get(stream_url, ssl=ssl_context) as file_resp:
+                    if file_resp.status != 200:
+                        raise Exception(f"Failed to download stream: {file_resp.status}")
+                    
+                    # Ensure downloads directory exists
+                    os.makedirs("downloads", exist_ok=True)
+                    
+                    # Save the file
+                    with open(filename, "wb") as f:
+                        while True:
+                            chunk = await file_resp.content.read(8192)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                    
+                    logger.info(f"xbit API download successful: {filename}")
+                    return filename

@@ -27,6 +27,8 @@ class Config:
         self.SOURCE_CODE = getenv("SOURCE_CODE", "https://github.com/AnonymousX1025/AnonXMusic")
 
         self.NEXTGEN_API_KEY = getenv("NEXTGEN_API_KEY")  # Priority: NextGenBot API Key
+        self.XBIT_API_KEY = getenv("XBIT_API_KEY")  # xbit API for audio/video streaming
+        self.XBIT_BASE_URL = getenv("XBIT_BASE_URL", "https://tgapi.xbitcode.com")  # xbit API base URL
         self.API_TOKEN = getenv("API_TOKEN")
         self.API_BASE_URL = getenv("API_BASE_URL")
         self.PREFIX = getenv("PREFIX", "/")
