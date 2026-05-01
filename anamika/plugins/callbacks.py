@@ -97,6 +97,23 @@ async def _controls(_, query: types.CallbackQuery):
         status = query.lang["replayed"]
         reply = query.lang["play_replayed"].format(user)
 
+    elif action == "seek":
+        to_seek = int(args[3])
+        media = queue.get_current(chat_id)
+        if not media.duration_sec:
+            return await query.answer(query.lang["play_seek_no_dur"], show_alert=True)
+
+        current_time = utils.get_current_time(media.played_at, media.time)
+        start_from = current_time + to_seek
+        if start_from < 1:
+            start_from = 1
+        elif start_from + 10 > media.duration_sec:
+            start_from = media.duration_sec - 5
+
+        await anon.play_media(chat_id, query.message, media, start_from)
+        media.time = start_from
+        return
+
     elif action == "stop":
         await anon.stop(chat_id)
         status = query.lang["stopped"]
@@ -113,8 +130,14 @@ async def _controls(_, query: types.CallbackQuery):
                 query.message.caption.html or query.message.text.html,
                 flags=re.DOTALL,
             )
+            media = queue.get_current(chat_id)
             keyboard = buttons.controls(
-                chat_id, status=status if action != "resume" else None
+                chat_id,
+                status=status if action != "resume" else None,
+                current=utils.get_current_time(media.played_at, media.time)
+                if media
+                else 0,
+                total=media.duration_sec if media else 0,
             )
         await query.edit_message_text(
             f"{mtext}\n\n<blockquote>{reply}</blockquote>", reply_markup=keyboard

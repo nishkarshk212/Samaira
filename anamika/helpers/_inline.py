@@ -23,16 +23,23 @@ class Inline:
         status: str = None,
         timer: str = None,
         remove: bool = False,
+        current: int = 0,
+        total: int = 0,
     ) -> types.InlineKeyboardMarkup:
         keyboard = []
-        if status:
-            keyboard.append(
-                [self.ikb(text=status, callback_data=f"controls status {chat_id}")]
-            )
-        elif timer:
-            keyboard.append(
-                [self.ikb(text=timer, callback_data=f"controls status {chat_id}")]
-            )
+        from anamika.helpers import utils
+
+        progress_text = utils.get_progress_bar(current, total)
+        keyboard.append(
+            [self.ikb(text=progress_text, callback_data=f"controls status {chat_id}")]
+        )
+
+        keyboard.append(
+            [
+                self.ikb(text="<< -20s", callback_data=f"controls seek {chat_id} -20"),
+                self.ikb(text="+20s >>", callback_data=f"controls seek {chat_id} 20"),
+            ]
+        )
 
         if not remove:
             keyboard.append(
@@ -44,6 +51,15 @@ class Inline:
                     self.ikb(text="▢", callback_data=f"controls stop {chat_id}"),
                 ]
             )
+
+        keyboard.append(
+            [
+                self.ikb(
+                    text="Add Me", url=f"https://t.me/{app.username}?startgroup=true"
+                ),
+                self.ikb(text="Updates", url=config.SUPPORT_CHANNEL),
+            ]
+        )
         return self.ikm(keyboard)
 
     def help_markup(

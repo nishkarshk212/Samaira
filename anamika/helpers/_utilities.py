@@ -4,6 +4,7 @@
 
 
 import re
+import time
 
 from pyrogram import enums, types
 
@@ -58,6 +59,27 @@ class Utilities:
             m = (seconds % 3600) // 60
             s = seconds % 60
             return f"{h:02d}:{m:02d}:{s:02d}"
+
+    def get_progress_bar(self, current: int, total: int) -> str:
+        if total == 0:
+            return "00:00 |————————————| 00:00"
+        
+        percentage = (current / total) * 100
+        progress = int(percentage / 10)
+        
+        bar = ""
+        for i in range(10):
+            if i == progress:
+                bar += "🔘"
+            else:
+                bar += "—"
+        
+        return f"{self.get_readable_time(current)} |{bar}| {self.get_readable_time(total)}"
+
+    def get_current_time(self, played_at: float, offset: int) -> int:
+        if played_at == 0:
+            return offset
+        return int(time.time() - played_at) + offset
 
 
     def get_url(self, message_1: types.Message) -> str | None:

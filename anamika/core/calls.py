@@ -3,6 +3,7 @@
 # This file is part of AnonXMusic
 
 
+import time
 from ntgcalls import (ConnectionNotFound, TelegramServerError,
                       RTMPStreamingUnsupported, ConnectionError)
 from pyrogram.errors import (ChatSendMediaForbidden, ChatSendPhotosForbidden,
@@ -80,42 +81,50 @@ class TgCall(PyTgCalls):
                 stream=stream,
                 config=types.GroupCallConfig(auto_start=False),
             )
+            media.played_at = time.time()
             if not seek_time:
                 media.time = 1
-                await db.add_call(chat_id)
-                text = _lang["play_media"].format(
-                    media.url,
-                    media.title,
-                    media.duration,
-                    media.user,
-                )
-                keyboard = buttons.controls(chat_id)
-                try:
-                    if _thumb:
-                        await message.edit_media(
-                            media=InputMediaPhoto(
-                                media=_thumb,
-                                caption=text,
-                            ),
-                            reply_markup=keyboard,
-                        )
-                    else:
-                        await message.edit_text(text, reply_markup=keyboard)
-                except (ChatSendMediaForbidden, ChatSendPhotosForbidden, MessageIdInvalid):
-                    if _thumb:
-                        sent = await app.send_photo(
-                            chat_id=chat_id,
-                            photo=_thumb,
+            else:
+                media.time = seek_time
+
+            await db.add_call(chat_id)
+            text = _lang["play_media"].format(
+                media.url,
+                media.title,
+                media.duration,
+                media.user,
+            )
+            keyboard = buttons.controls(
+                chat_id,
+                current=media.time,
+                total=media.duration_sec,
+            )
+            try:
+                if _thumb:
+                    await message.edit_media(
+                        media=InputMediaPhoto(
+                            media=_thumb,
                             caption=text,
-                            reply_markup=keyboard,
-                        )
-                    else:
-                        sent = await app.send_message(
-                            chat_id=chat_id,
-                            text=text,
-                            reply_markup=keyboard,
-                        )
-                    media.message_id = sent.id
+                        ),
+                        reply_markup=keyboard,
+                    )
+                else:
+                    await message.edit_text(text, reply_markup=keyboard)
+            except (ChatSendMediaForbidden, ChatSendPhotosForbidden, MessageIdInvalid):
+                if _thumb:
+                    sent = await app.send_photo(
+                        chat_id=chat_id,
+                        photo=_thumb,
+                        caption=text,
+                        reply_markup=keyboard,
+                    )
+                else:
+                    sent = await app.send_message(
+                        chat_id=chat_id,
+                        text=text,
+                        reply_markup=keyboard,
+                    )
+                media.message_id = sent.id
         except FileNotFoundError:
             await message.edit_text(_lang["error_no_file"].format(config.SUPPORT_CHAT))
             await self.play_next(chat_id)
